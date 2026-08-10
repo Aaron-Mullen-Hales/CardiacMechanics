@@ -1,0 +1,55 @@
+FoamFile
+{
+    version 2.0;
+    format ascii;
+    class volVectorField;
+    object D;
+}
+dimensions [0 1 0 0 0 0 0];
+internalField uniform (0 0 0);
+boundaryField
+{
+    innerWall
+    {
+        type solidTraction;
+        traction uniform (0 0 0);
+        useUndeformedArea false;
+        pressureSeries
+        {
+            "file|fileName" "$FOAM_CASE/constant/load/timeVsPressure";
+            outOfBounds clamp;
+        }
+        value uniform (0 0 0);
+    }
+    outerWall
+    {
+        type solidTraction;
+        traction uniform (0 0 0);
+        pressure uniform 0;
+        useUndeformedArea false;
+        value uniform (0 0 0);
+    }
+    bottom
+    {
+        type fixedDisplacement;
+        value uniform (0 0 0);
+    }
+    top
+    {
+        type fixedRotation;
+        rotationAxis (0 0 1);
+        rotationOrigin (0 0 0);
+        rotationAngleSeries
+        {
+            "file|fileName" "$FOAM_CASE/constant/load/timeVsRotationDegrees";
+            outOfBounds clamp;
+        }
+        displacementSeries
+        {
+            "file|fileName" "$FOAM_CASE/constant/load/timeVsTranslation";
+            outOfBounds clamp;
+        }
+        nonOrthogonalCorrections true;
+        value uniform (0 0 0);
+    }
+}

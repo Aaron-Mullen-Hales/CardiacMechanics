@@ -1,0 +1,22 @@
+FoamFile
+{
+    version 2.0;
+    format ascii;
+    class dictionary;
+    object solidProperties;
+}
+solidModel nonLinearGeometryTotalLagrangianTotalDisplacement;
+"nonLinearGeometryTotalLagrangianTotalDisplacementCoeffs|nonLinearGeometryTotalLagrangianTotalDisplacementCoeffs"
+{
+    solutionAlgorithm PETScSNES;
+    solvePressure true;
+    optionsFile petscOptions.split;
+    scaleMixedPetScFields true;
+    pressureUnknownScale twoMu;
+    pressureScaleFactor 1;
+    stabilisation
+    {
+        momentum { type diffStencilLaplacian; scaleFactor 1; }
+        pressure { type RhieChow; scaleFactor 10; scaleFactorJacobian 10; }
+    }
+}

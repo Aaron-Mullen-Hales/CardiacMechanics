@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+case_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+for name in mesh1 mesh2 mesh3 mesh4 mesh5 mesh6 mesh7; do
+    rm -rf "$case_root/runs/$name"
+done
+rm -f "$case_root/runs/validation_summary.json"

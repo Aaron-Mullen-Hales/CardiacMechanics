@@ -1,0 +1,19 @@
+{
+  "schema_version": 2,
+  "geometry_m": {
+    "height": 0.01,
+    "inner_radius": 0.008,
+    "outer_radius": 0.01
+  },
+  "source": "Karabelas et al. (2022), An accurate, robust, and efficient finite element framework for anisotropic, nearly and fully incompressible elasticity, Table 1 (artery benchmark hexahedral mesh sizes)",
+  "meshes": {
+    "mesh1": {"radial": 4, "circumferential": 24, "axial": 10, "level": 1, "purpose": "coarsest paper level; quick regression and exact accepted fullRigid_0 replay"},
+    "mesh2": {"radial": 8, "circumferential": 48, "axial": 20, "level": 2, "purpose": "paper level 2"},
+    "mesh3": {"radial": 12, "circumferential": 72, "axial": 30, "level": 3, "purpose": "paper level 3"},
+    "mesh4": {"radial": 16, "circumferential": 96, "axial": 40, "level": 4, "purpose": "paper level 4"},
+    "mesh5": {"radial": 20, "circumferential": 120, "axial": 50, "level": 5, "purpose": "paper level 5"},
+    "mesh6": {"radial": 24, "circumferential": 144, "axial": 60, "level": 6, "purpose": "paper level 6"},
+    "mesh7": {"radial": 28, "circumferential": 168, "axial": 70, "level": 7, "purpose": "finest paper level; used for the published stress-distribution figure"}
+  },
+  "refinement_sequence": ["mesh1", "mesh2", "mesh3", "mesh4", "mesh5", "mesh6", "mesh7"]
+}

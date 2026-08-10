@@ -1,0 +1,16 @@
+FoamFile
+{
+    version 2.0;
+    format ascii;
+    class pointVectorField;
+    object pointD;
+}
+dimensions [0 1 0 0 0 0 0];
+internalField uniform (0 0 0);
+boundaryField
+{
+    innerWall { type calculated; }
+    outerWall { type calculated; }
+    bottom { type fixedValue; value uniform (0 0 0); }
+    top { type fixedValue; value uniform (0 0 0); }
+}

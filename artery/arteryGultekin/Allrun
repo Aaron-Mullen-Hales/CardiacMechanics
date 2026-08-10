@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -o pipefail
+case_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+set -euo pipefail
+if ! command -v solids4Foam >/dev/null 2>&1; then
+    echo "solids4Foam is not in PATH. Source your OpenFOAM/solids4Foam environment before running ./Allrun." >&2
+    exit 2
+fi
+exec python3 "$case_root/scripts/workflow.py" "$@"
