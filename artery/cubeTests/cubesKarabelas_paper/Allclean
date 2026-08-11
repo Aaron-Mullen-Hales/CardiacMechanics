@@ -1,0 +1,11 @@
+#!/bin/bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+cd "${0%/*}" || exit 1
+
+for case_dir in cube1 cube2; do
+    ./"$case_dir"/Allclean
+done
+
+rm -rf scripts/__pycache__

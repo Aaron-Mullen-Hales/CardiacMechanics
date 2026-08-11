@@ -1,0 +1,66 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| solids4foam: solid mechanics and fluid-solid interaction simulations        |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      mechanicalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+planeStress no;
+
+mechanical
+(
+    cube
+    {
+        type                    GultekinTwoFibreElastic;
+
+        rho                     rho [1 -3 0 0 0 0 0] 1000;
+
+        // Gultekin, Dal & Holzapfel (2019), Table 1, case b.
+        // Paper quotes kPa; these are Pa.
+        // Case b differs from case a only in k1 (10x stiffer fibres).
+        mu                      mu    [1 -1 -2 0 0 0 0] 10000;
+        k1                      k1    [1 -1 -2 0 0 0 0] 500000;
+        k2                      k2    [0 0 0 0 0 0 0]   2;
+        bulkModulus             kappa [1 -1 -2 0 0 0 0] 5000000;
+
+        // One fibre family, M = (1,0,0), read from the 0/f0 and 0/f0f fields.
+        fibreField1             f0;
+        faceFibreField1         f0f;
+        useSecondFibreFamily    false;
+
+        // Unsplit anisotropic invariant (q = I4). This is the paper's
+        // "without anisotropic split" (WAS) treatment of the fibre term: the
+        // multiplicative decomposition is applied to the isotropic response
+        // only and excluded from the fibre response.
+        anisotropicSplit        false;
+        fibresTensionOnly       false;
+
+        // Numerical implicit stiffness. It is added implicitly and subtracted
+        // explicitly, and divided back out of the solidTraction update, so it
+        // cancels at convergence and cannot bias the answer -- it only sets
+        // how stable the iteration is.
+        //
+        // The default estimate (mu + 2*k1) linearises the fibre response about
+        // the UNDEFORMED state (I4 = 1). Under fibre-aligned stretch the true
+        // tangent 4*d2Psi/dI4^2*I4^2/J grows exponentially, reaching ~1.7e9
+        // at lambda = 1.5 here, so the default is far too small and the
+        // solidTraction fixed-point iteration diverges. See ../README.md.
+        implicitShearModulus    implicitShearModulus [1 -1 -2 0 0 0 0] 8e8;
+
+        fibreUnitTolerance      1e-6;
+        clipExponent            false;
+        exponentLimit           650;
+
+        // Writes GTF_J, GTF_I4, GTF_lambda4 and the stress components used by
+        // ../../scripts/postProcess.py
+        writeDiagnostics        true;
+    }
+);
+
+// ************************************************************************* //

@@ -1,0 +1,37 @@
+#!/bin/bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+# Runs every material case below this directory, in sequence, and reports a
+# combined PASS/FAIL summary. Each case can also be run on its own with its
+# own ./Allrun.
+
+cd "${0%/*}" || exit 1
+
+status=0
+for case_dir in caseA caseB; do
+    echo
+    echo "==============================================================="
+    echo " $case_dir"
+    echo "==============================================================="
+    if ! ( ./"$case_dir"/Allrun ); then
+        echo " $case_dir FAILED" >&2
+        status=1
+    fi
+done
+
+echo
+echo "==============================================================="
+echo " Summary"
+echo "==============================================================="
+for case_dir in caseA caseB; do
+    csv="$case_dir/postProcessing/paperQuantities.csv"
+    if [[ -f "$csv" ]]; then
+        last_lambda=$(tail -1 "$csv" | cut -d, -f1)
+        printf "  %-8s reached lambda = %s\n" "$case_dir" "$last_lambda"
+    else
+        printf "  %-8s no results\n" "$case_dir"
+    fi
+done
+
+exit $status

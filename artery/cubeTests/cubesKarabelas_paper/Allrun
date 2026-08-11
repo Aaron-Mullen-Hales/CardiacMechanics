@@ -1,0 +1,44 @@
+#!/bin/bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+# Runs both cubes (and so all four material cases) and prints a combined
+# summary. Each cube, and each case within it, can also be run on its own
+# with its own ./Allrun.
+
+cd "${0%/*}" || exit 1
+
+status=0
+for cube in cube1 cube2; do
+    echo
+    echo "==============================================================="
+    echo " $cube"
+    echo "==============================================================="
+    if ! ( ./"$cube"/Allrun ); then
+        echo " $cube FAILED" >&2
+        status=1
+    fi
+done
+
+echo
+echo "==============================================================="
+echo " Summary"
+echo "==============================================================="
+printf "  %-16s %-10s %-12s %s\n" "case" "increments" "lambda" "max |Javg err|"
+for csv in cube*/case*/postProcessing/paperQuantities.csv; do
+    [[ -f "$csv" ]] || continue
+    name="${csv%%/postProcessing/*}"
+    n=$(( $(wc -l < "$csv") - 1 ))
+    lambda=$(tail -1 "$csv" | cut -d, -f1)
+    # Javg_err is column 4; take the largest over all increments
+    jerr=$(tail -n +2 "$csv" | cut -d, -f4 | sort -g | tail -1)
+    printf "  %-16s %-10s %-12s %s\n" "$name" "$n" "$lambda" "$jerr"
+done
+
+if [[ $status -eq 0 ]]; then
+    echo
+    echo "  All cases completed. A case is only correct if its own PASS line"
+    echo "  appeared above; this table is a convenience summary."
+fi
+
+exit $status

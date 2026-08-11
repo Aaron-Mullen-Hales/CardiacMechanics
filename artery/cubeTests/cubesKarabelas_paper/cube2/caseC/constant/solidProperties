@@ -1,0 +1,45 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| solids4foam: solid mechanics and fluid-solid interaction simulations        |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      solidProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Runtime type name of the merged mixed finite-volume total-Lagrangian solid
+// model (C++ class nonLinGeomTotalLagTotalDispSolid).
+solidModel nonLinearGeometryTotalLagrangianTotalDisplacement;
+
+nonLinearGeometryTotalLagrangianTotalDisplacementCoeffs
+{
+    solutionAlgorithm PETScSNES;
+    solvePressure     true;
+    optionsFile       petscOptions.split;
+
+    // Mixed displacement-pressure scaling
+    scaleMixedPetScFields true;
+    pressureUnknownScale  twoMu;
+    pressureScaleFactor   1;
+
+    stabilisation
+    {
+        momentum
+        {
+            type        diffStencilLaplacian;
+            scaleFactor 1;
+        }
+        pressure
+        {
+            type                RhieChow;
+            scaleFactor         10;
+            scaleFactorJacobian 10;
+        }
+    }
+}
+
+// ************************************************************************* //

@@ -1,0 +1,9 @@
+#!/bin/bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+cd "${0%/*}" || exit 1
+
+for case_dir in caseA caseC; do
+    ./"$case_dir"/Allclean
+done

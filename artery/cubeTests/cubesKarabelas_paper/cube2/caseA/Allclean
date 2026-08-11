@@ -1,0 +1,14 @@
+#!/bin/bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+: "${WM_PROJECT_DIR:?OpenFOAM environment not sourced}"
+. "$WM_PROJECT_DIR/bin/tools/CleanFunctions"
+
+cd "${0%/*}" || exit 1
+
+cleanCase
+rm -rf postProcessing VTK
+# solids4Foam writes these echoes of the dictionaries with defaults filled in
+rm -f constant/*.withDefaultValues system/*.withDefaultValues
+rm -f case.foam

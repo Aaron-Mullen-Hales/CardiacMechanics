@@ -1,0 +1,67 @@
+FoamFile
+{
+    version 2.0;
+    format ascii;
+    class volVectorField;
+    object D;
+}
+
+dimensions [0 1 0 0 0 0 0];
+internalField uniform (0 0 0);
+
+boundaryField
+{
+    xMin
+    {
+        type displacementOrTraction;
+        constantDisplacement uniform (0 0 0);
+        constantTraction uniform (0 0 0);
+        specifyNormalDirection uniform 1;
+        value uniform (0 0 0);
+    }
+    xMax
+    {
+        type displacementOrTraction;
+        displacementSeries
+        {
+            "file|fileName" "$FOAM_CASE/constant/load/timeVsDisplacement";
+            outOfBounds clamp;
+        }
+        constantTraction uniform (0 0 0);
+        specifyNormalDirection uniform 1;
+        value uniform (0 0 0);
+    }
+    yMin
+    {
+        type displacementOrTraction;
+        constantDisplacement uniform (0 0 0);
+        constantTraction uniform (0 0 0);
+        specifyNormalDirection uniform 1;
+        value uniform (0 0 0);
+    }
+    yMax
+    {
+        type solidTraction;
+        traction uniform (0 0 0);
+        pressure uniform 0;
+        useUndeformedArea false;
+        value uniform (0 0 0);
+    }
+    zMin
+    {
+        type displacementOrTraction;
+        constantDisplacement uniform (0 0 0);
+        constantTraction uniform (0 0 0);
+        specifyNormalDirection uniform 1;
+        value uniform (0 0 0);
+    }
+    zMax
+    {
+        type solidTraction;
+        traction uniform (0 0 0);
+        pressure uniform 0;
+        useUndeformedArea false;
+        value uniform (0 0 0);
+    }
+}
+

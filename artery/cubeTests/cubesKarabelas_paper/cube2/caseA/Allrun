@@ -1,0 +1,61 @@
+#!/bin/bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+# ---------------------------------------------------------------------------
+# solids4Foam Allrun script
+#
+# Gultekin, Dal & Holzapfel (2019) unit-cube benchmark, Sec. 4.2 / Fig. 4a, material case a, stretch transverse to the fibre.
+# Runs blockMesh, solids4Foam, then the built-in post-processing, which
+# compares the result against a closed-form reference and prints PASS/FAIL.
+# ---------------------------------------------------------------------------
+
+export DYLD_LIBRARY_PATH="${DYLD_LIBRARY_PATH:-}"
+: "${FOAM_LD_LIBRARY_PATH:=}"
+: "${WM_PROJECT_DIR:?OpenFOAM environment not sourced}"
+. "$WM_PROJECT_DIR/bin/tools/RunFunctions"
+source solids4FoamScripts.sh
+
+cd "${0%/*}" || exit 1
+
+if [[ -z "${PETSC_DIR:-}" ]]; then
+    echo
+    echo "Skipping this case as PETSc is not installed (set PETSC_DIR)."
+    echo "This case uses solutionAlgorithm PETScSNES."
+    echo
+    exit 0
+fi
+
+solids4Foam::convertCaseFormat .
+
+solids4Foam::runApplication blockMesh
+solids4Foam::runApplication solids4Foam
+
+# ---------------------------------------------------------------------------
+# Post-processing
+#
+# Locate the shared scripts directory relative to this case rather than
+# assuming a fixed depth, so the case still works if it is copied elsewhere.
+# If it cannot be found, or python3 is unavailable, the solve is still valid
+# -- only the automatic comparison against the closed-form reference is
+# skipped.
+# ---------------------------------------------------------------------------
+postProcess=""
+for candidate in ../../scripts ../scripts ./scripts; do
+    if [[ -f "$candidate/postProcess.py" ]]; then
+        postProcess="$candidate/postProcess.py"
+        break
+    fi
+done
+
+echo
+if [[ -z "$postProcess" ]]; then
+    echo "Note: scripts/postProcess.py not found; skipping the PASS/FAIL check."
+    echo "      Results are in the time directories; see the top-level README."
+elif ! command -v python3 > /dev/null 2>&1; then
+    echo "Note: python3 not found; skipping the PASS/FAIL check."
+    echo "      Results are in the time directories; see the top-level README."
+else
+    echo "Post-processing:"
+    python3 "$postProcess" .
+fi
