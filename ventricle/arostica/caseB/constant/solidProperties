@@ -1,0 +1,77 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| solids4foam: solid mechanics and fluid-solid interaction simulations        |
+| Version:     v2.0                                                           |
+| Web:         https://solids4foam.github.io                                  |
+| Disclaimer:  This offering is not approved or endorsed by OpenCFD Limited,  |
+|              producer and distributor of the OpenFOAM software via          |
+|              www.openfoam.com, and owner of the OPENFOAM® and OpenCFD®      |
+|              trade marks.                                                   |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      solidProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solidModel      nonLinearGeometryTotalLagrangianTotalDisplacement;
+
+nonLinearGeometryTotalLagrangianTotalDisplacementCoeffs
+{
+    solutionAlgorithm   PETScSNES;          // JFNK via PETSc SNES
+    optionsFile         "$FOAM_CASE/petscOptions.snes";
+
+    // MIXED displacement-pressure formulation: the pressure is an independent
+    // unknown p and the volumetric response enters the stress as -p*I, with
+    // p tied to J by  p = -kappa/2 (J - 1/J).  This is the target formulation
+    // for this benchmark reproduction; do not switch it off casually.
+    solvePressure       true;
+
+    predictor           false;
+
+    // ---- EXPERIMENTAL: how the internal momentum face force is built ------
+    //
+    //   interpolatedCell   the original implementation: interpolate the CELL
+    //                      stress and the CELL J*Finv^T to the faces.  This is
+    //                      the DEFAULT when the entry is absent, and it is
+    //                      preserved bit-for-bit.
+    //
+    //   directFaceState    build the face state directly from the corrected
+    //                      face kinematics instead:
+    //                        Ff  = I + gradDf^T,  Jf = det(Ff),  Ff^-1
+    //                        sigma_f   = material face stress - I_h[p]*I
+    //                        SfCurrent = Jf Ff^-T & Sf
+    //                      No cell->face interpolation of stress or geometry.
+    //
+    // Traction-boundary enforcement, momentum stabilisation, the pressure
+    // residual, the constitutive law, the BCs, the time scheme and the
+    // preconditioner are identical in both.
+    faceForceTreatment      directFaceState;
+
+    // Compute BOTH constructions each residual evaluation and report the
+    // largest relative difference and the worst face.  Diagnostic only.
+    faceForceDiagnostics    true;
+
+
+
+
+    // Scaling of the pressure unknown in the PETSc vector (pHat = p/scale)
+    scaleMixedPetScFields   true;
+    pressureUnknownScale    twoMu;
+    pressureScaleByTwoMu    true;
+    pressureScaleFactor     1;
+
+    // Numerical stabilisation.  A sensitivity study showed both terms are
+    // dynamically inert here: a factor-of-two change in either moves the
+    // displacement by <0.2%, so leave them at the benchmark values.
+    stabilisation
+    {
+        momentum { type diffStencilLaplacian; scaleFactor 0.01; }
+        pressure { type RhieChow;             scaleFactor 0.01; scaleFactorJacobian 10; }
+    }
+}
+
+// ************************************************************************* //

@@ -1,0 +1,52 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| solids4foam: solid mechanics and fluid-solid interaction simulations        |
+| Version:     v2.0                                                           |
+| Web:         https://solids4foam.github.io                                  |
+| Disclaimer:  This offering is not approved or endorsed by OpenCFD Limited,  |
+|              producer and distributor of the OpenFOAM software via          |
+|              www.openfoam.com, and owner of the OPENFOAM® and OpenCFD®      |
+|              trade marks.                                                   |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Second-order backward differencing (BDF2) for both the acceleration and the
+// velocity.  The reference FEM implementations use generalized-alpha instead;
+// that is a known formulation difference, not an error.
+d2dt2Schemes
+{
+    default         backward;
+    d2dt2(D)        backward;
+    d2dt2(pointD)   backward;
+}
+
+ddtSchemes
+{
+    default         backward;
+}
+
+// leastSquaresS4f sets useBoundaryFaceValues = false on every patch, so cell
+// gradients are built from cell values only and never pick up a traction
+// patch's own extrapolated face value.
+gradSchemes
+{
+    default         leastSquaresS4f;
+    grad(D)         leastSquaresS4f;
+    grad(p)         leastSquaresS4f;
+}
+
+divSchemes          { default none; }
+laplacianSchemes    { default Gauss linear corrected; }
+interpolationSchemes{ default linear; }
+snGradSchemes       { default corrected; }
+
+wallDist            { method meshWave; }
+
+// ************************************************************************* //

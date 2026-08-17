@@ -1,0 +1,72 @@
+#!/bin/bash
+#
+# Aróstica Benchmark 1, monoventricle, Step 0, Case B.
+#
+#   ./Allrun                 run every mesh in meshes/ (mesh1 mesh2 mesh3)
+#   ./Allrun mesh1           run just one
+#   ./Allrun mesh1 mesh3     run a subset
+#
+# Each run is assembled into a directory named after the mesh, from:
+#     0/ constant/ system/ lib/ petscOptions.snes   (shared case setup)
+#   + meshes/<name>/polyMesh                        (that mesh)
+#   + meshes/<name>/0/{f0,s0,n0,f0f,s0f,n0f,t}      (its fibre fields)
+#
+# Results, logs and probe data stay inside the per-mesh directory, so the
+# three resolutions never overwrite each other.
+#
+# To change how far a run goes, edit "endTime" in system/controlDict.  These
+# scripts never rewrite that file: foamDictionary -set would strip its header
+# and all of its comments.
+
+# Source the OpenFOAM environment if it is not already active, so this script
+# works from a plain shell as well as from a prepared one.  Do this BEFORE
+# enabling errexit: the bashrc returns non-zero from some helper functions.
+if [ -z "${WM_PROJECT_DIR:-}" ]; then
+    . /Volumes/OpenFoam/OpenFOAM-v2312/etc/bashrc
+fi
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+cd "$HERE"
+
+MESHES="$@"
+if [ -z "$MESHES" ]; then
+    MESHES=$(ls -d meshes/*/ 2>/dev/null | xargs -n1 basename | sort)
+fi
+if [ -z "$MESHES" ]; then
+    echo "No meshes found.  Generate them with e.g."
+    echo "    ./tools/makeMesh.sh 8  9 3 meshes/mesh1"
+    exit 1
+fi
+
+for M in $MESHES; do
+    if [ ! -d "meshes/$M/polyMesh" ]; then
+        echo "!! meshes/$M/polyMesh not found, skipping"; continue
+    fi
+
+    echo "=============================================================="
+    echo " $M"
+    echo "=============================================================="
+
+    rm -rf "$M"; mkdir -p "$M"
+    cp -R 0 constant system lib petscOptions.snes "$M"/
+    rm -rf "$M/constant/polyMesh" "$M/constant/polyMesh.orig"
+    cp -R "meshes/$M/polyMesh" "$M/constant/polyMesh"
+    for f in f0 s0 n0 f0f s0f n0f t; do
+        cp "meshes/$M/0/$f" "$M/0/$f"
+    done
+
+    (
+        cd "$M"
+        export DYLD_LIBRARY_PATH="$PWD/lib:$FOAM_USER_LIBBIN:$FOAM_LIBBIN:${DYLD_LIBRARY_PATH:-}"
+        export LD_LIBRARY_PATH="$PWD/lib:$FOAM_USER_LIBBIN:$FOAM_LIBBIN:${LD_LIBRARY_PATH:-}"
+        echo "Running solids4Foam  (log: $M/log.solids4Foam)"
+        runApplication solids4Foam
+        cp "$HERE/extractProbes.sh" "$HERE/tools/neutraliseD.py" . 2>/dev/null
+        mkdir -p tools && cp "$HERE/tools/neutraliseD.py" tools/
+        ./extractProbes.sh
+    )
+    echo
+done
+
+echo "Done.  Per-mesh results are in:  $MESHES"

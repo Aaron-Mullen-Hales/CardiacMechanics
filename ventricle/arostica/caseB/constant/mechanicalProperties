@@ -1,0 +1,77 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| solids4foam: solid mechanics and fluid-solid interaction simulations        |
+| Version:     v2.0                                                           |
+| Web:         https://solids4foam.github.io                                  |
+| Disclaimer:  This offering is not approved or endorsed by OpenCFD Limited,  |
+|              producer and distributor of the OpenFOAM software via          |
+|              www.openfoam.com, and owner of the OPENFOAM® and OpenCFD®      |
+|              trade marks.                                                   |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      mechanicalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+planeStress     no;
+
+mechanical
+(
+    myocardium
+    {
+        // Wrapper that adds an active stress tau*(f0 (x) f0) to a passive law.
+        // Case B is PASSIVE: activeTension is exactly zero, so this wrapper
+        // contributes nothing and the response is the passive law alone.
+        type                electroMechanicalLaw;
+        rho                 rho           [1 -3  0 0 0 0 0] 1000;
+        activeTension       activeTension [1 -1 -2 0 0 0 0] 0;      // tau = 0 (Case B)
+        rampTime            0;
+
+        passiveMechanicalLaw
+        {
+            // Holzapfel-Ogden with Kelvin-Voigt viscosity, Arostica variant:
+            //   Psi = a/(2b)  (exp(b (I1bar - 3)) - 1)
+            //       + af/(2bf)  chi(I4f) (exp(bf (I4f - 1)^2) - 1)
+            //       + as/(2bs)  chi(I4s) (exp(bs (I4s - 1)^2) - 1)
+            //       + afs/(2bfs)         (exp(bfs I8fs^2)     - 1)
+            // with I1bar = J^(-2/3) tr(C) isochoric but I4f, I4s, I8fs RAW,
+            // and the viscous second Piola-Kirchhoff stress S_v = eta * Edot.
+            type                ArosticaHolzapfelOgdenViscoelastic;
+
+            rho                 rho  [1 -3  0 0 0 0 0] 1000;    // density        [kg/m^3]
+            eta                 eta  [1 -1 -1 0 0 0 0] 100;     // viscosity      [Pa.s]
+            bulkModulus         bulkModulus [1 -1 -2 0 0 0 0] 1e6;  // kappa      [Pa]
+
+            // Table 2 passive coefficients
+            a                   a    [1 -1 -2 0 0 0 0] 59;
+            b                   b    [0  0  0 0 0 0 0] 8.023;
+            af                  af   [1 -1 -2 0 0 0 0] 18472;
+            bf                  bf   [0  0  0 0 0 0 0] 16.026;
+            as                  as   [1 -1 -2 0 0 0 0] 2481;
+            bs                  bs   [0  0  0 0 0 0 0] 11.12;
+            afs                 afs  [1 -1 -2 0 0 0 0] 216;
+            bfs                 bfs  [0  0  0 0 0 0 0] 11.436;
+
+            // Tension/compression switch chi applied to I4f and I4s.
+            // "logistic" is  chi(x) = 1/(1 + exp(-k (x - 1))),  k = 100.
+            compressionSwitch   logistic;
+            compressionSwitchK  100;
+
+            // Microstructure field names (the fields live in 0/)
+            fibreField          f0;     faceFibreField        f0f;
+            sheetField          s0;     faceSheetField        s0f;
+            sheetNormalField    n0;     faceSheetNormalField  n0f;
+
+            impKcoeff           1;
+            directionTolerance  1e-6;
+            tangentEps          1e-7;
+            writeDiagnostics    false;
+        }
+    }
+);
+
+// ************************************************************************* //
