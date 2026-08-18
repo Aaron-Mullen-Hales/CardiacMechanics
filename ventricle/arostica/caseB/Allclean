@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Remove all run output, keep the case (and every mesh) runnable.
+#
+# NOTE: this deliberately does NOT use OpenFOAM's cleanCase, which deletes
+# constant/polyMesh.  That is correct for a tutorial that rebuilds its mesh
+# with blockMesh, but this case ships pre-generated meshes and fibre fields.
+#
+# Kept:    0/ constant/ system/ lib/ tools/ meshes/ petscOptions.snes
+# Removed: the per-mesh run directories, logs, probe output
+set -e
+cd "$(dirname "$0")"
+
+for M in $(ls -d meshes/*/ 2>/dev/null | xargs -n1 basename); do
+    rm -rf "$M"
+done
+# stray numeric time directories at the top level (from the older single-mesh
+# layout, where results were written here rather than into a per-mesh dir)
+for d in [0-9]* ; do
+    [ -d "$d" ] || continue
+    [ "$d" = "0" ] && continue
+    rm -rf "$d"
+done
+
+rm -rf postProcessing probeCase case.foam
+rm -f  log.* *.OpenFOAM constant/*.withDefaultValues
+
+echo "Cleaned.  Kept 0/, constant/, system/, lib/, tools/ and meshes/."
+echo "Meshes available: $(ls -d meshes/*/ 2>/dev/null | xargs -n1 basename | tr '\n' ' ')"

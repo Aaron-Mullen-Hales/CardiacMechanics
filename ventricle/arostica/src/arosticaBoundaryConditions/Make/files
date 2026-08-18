@@ -1,0 +1,5 @@
+arosticaSpringDashpotTractionFvPatchVectorField.C
+arosticaActivationPressureTractionFvPatchVectorField.C
+
+LIB = $(AROSTICA_HEX_LIBBIN)/libArosticaHexBoundaryConditions
+

@@ -1,0 +1,81 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| solids4foam: solid mechanics and fluid-solid interaction simulations        |
+| Version:     v2.0                                                           |
+| Web:         https://solids4foam.github.io                                  |
+| Disclaimer:  This offering is not approved or endorsed by OpenCFD Limited,  |
+|              producer and distributor of the OpenFOAM software via          |
+|              www.openfoam.com, and owner of the OPENFOAM® and OpenCFD®      |
+|              trade marks.                                                   |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      D;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Displacement.  All three patches are traction-type (fixedGradient); the
+// physics lives in the boundary-condition classes in ../lib:
+//
+//   endocardium  arosticaActivationPressureTraction
+//                integrates the Bestel pressure ODE at runtime and applies
+//                -p n on the CURRENT area (follower load)
+//   epicardium   arosticaNormalSpringDashpotTraction
+//                -[alpha (D.N) + beta (Ddot.N)] N on the REFERENCE area
+//   base         arosticaVectorSpringDashpotTraction
+//                -[alpha D + beta Ddot] on the REFERENCE area
+//
+// supportDisplacementMode selects WHERE the support reads the displacement:
+//   ownerCell              adjacent cell centre D_c          (1st order)
+//   cellReconstructedFace  D_c + (Cf - Cc) & grad(D)         (2nd order)
+// See README.md -- this matters because alpha_epi = 1e8 Pa/m.
+
+dimensions [0 1 0 0 0 0 0];
+internalField uniform (0 0 0);
+
+boundaryField
+{
+    endocardium
+    {
+        type arosticaActivationPressureTraction;
+        traction uniform (0 0 0);
+        alphaMin alphaMin [0 0 -1 0 0 0 0] -30;
+        alphaMax alphaMax [0 0 -1 0 0 0 0] 5;
+        alphaPre alphaPre [0 0 -1 0 0 0 0] 5;
+        alphaMid alphaMid [0 0 -1 0 0 0 0] 1;
+        sigmaPre sigmaPre [1 -1 -2 0 0 0 0] 7000;
+        sigmaMid sigmaMid [1 -1 -2 0 0 0 0] 16000;
+        tSysPre tSysPre [0 0 1 0 0 0 0] 0.17;
+        tDiasPre tDiasPre [0 0 1 0 0 0 0] 0.484;
+        gamma gamma [0 0 1 0 0 0 0] 0.005;
+        useUndeformedArea false;
+        value uniform (0 0 0);
+    }
+    epicardium
+    {
+        type arosticaNormalSpringDashpotTraction;
+        springCoefficient springCoefficientValue [1 -2 -2 0 0 0 0] 1e8;
+        dashpotCoefficient dashpotCoefficientValue [1 -2 -1 0 0 0 0] 5e3;
+        useUndeformedArea true;
+        supportDisplacementMode cellReconstructedFace;
+        writeDiagnostics false;
+        tangentialTraction uniform (0 0 0);
+        value uniform (0 0 0);
+    }
+    base
+    {
+        type arosticaVectorSpringDashpotTraction;
+        springCoefficient springCoefficientValue [1 -2 -2 0 0 0 0] 100000;
+        dashpotCoefficient dashpotCoefficientValue [1 -2 -1 0 0 0 0] 5e3;
+        useUndeformedArea true;
+        writeDiagnostics false;
+        value uniform (0 0 0);
+    }
+}
+
+// ************************************************************************* //
+
+// ************************************************************************* //

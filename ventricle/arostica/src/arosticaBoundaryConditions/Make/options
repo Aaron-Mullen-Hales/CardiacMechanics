@@ -1,0 +1,13 @@
+include $(S4F_CARDIAC_CLEAN)/etc/wmake-options
+
+EXE_INC = \
+    $(VERSION_SPECIFIC_INC) \
+    -I$(S4F_CARDIAC_CLEAN)/src/solids4FoamModels/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude
+
+LIB_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lsolids4FoamModels \
+    -lfiniteVolume \
+    -lmeshTools

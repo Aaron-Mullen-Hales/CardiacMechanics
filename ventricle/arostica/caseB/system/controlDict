@@ -1,0 +1,47 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| solids4foam: solid mechanics and fluid-solid interaction simulations        |
+| Version:     v2.0                                                           |
+| Web:         https://solids4foam.github.io                                  |
+| Disclaimer:  This offering is not approved or endorsed by OpenCFD Limited,  |
+|              producer and distributor of the OpenFOAM software via          |
+|              www.openfoam.com, and owner of the OPENFOAM® and OpenCFD®      |
+|              trade marks.                                                   |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     solids4Foam;
+
+// The three Arostica boundary conditions are case-local and live in ./lib
+libs            ("libArosticaHexBoundaryConditions.dylib");
+
+startFrom       startTime;
+startTime       0;
+
+stopAt          endTime;
+endTime         1.0;            // full benchmark cycle is (0, 1] s
+
+// Participants used ~1 ms.  Note the run currently stops near t ~ 0.21-0.27
+// regardless of this value -- see README.md.
+deltaT          0.001;
+
+writeControl    timeStep;
+writeInterval   10;             // every 10 ms at dt = 1e-3
+
+writeFormat     ascii;
+writePrecision  16;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable false;
+
+// ************************************************************************* //

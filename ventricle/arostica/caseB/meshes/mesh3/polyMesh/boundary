@@ -1,0 +1,30 @@
+FoamFile
+{
+    version 2.0;
+    format ascii;
+    class polyBoundaryMesh;
+    location "constant/polyMesh";
+    object boundary;
+}
+
+3
+(
+    endocardium
+    {
+        type wall;
+        nFaces 1140;
+        startFace 15860;
+    }
+    epicardium
+    {
+        type wall;
+        nFaces 1140;
+        startFace 17000;
+    }
+    base
+    {
+        type wall;
+        nFaces 200;
+        startFace 18140;
+    }
+)

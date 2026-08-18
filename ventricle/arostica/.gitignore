@@ -1,0 +1,36 @@
+# Run output and scratch data are deliberately NOT tracked: this tree holds
+# ~17 GB of solver results, provenance archives and reference datasets.
+# Only the case setup, the sources and the written-up findings are versioned.
+*
+!.gitignore
+!caseB/
+!caseB/**
+!HexMeshesTests/
+!HexMeshesTests/src/
+!HexMeshesTests/src/**
+!HexMeshesTests/scripts/
+!HexMeshesTests/scripts/**
+!HexMeshesTests/debug_collaboration/
+!HexMeshesTests/debug_collaboration/*.md
+!HexMeshesTests/debug_collaboration/ensemble/
+!HexMeshesTests/debug_collaboration/ensemble/*.py
+
+# ...and inside caseB, never the run directories or logs
+caseB/mesh[0-9]/
+caseB/probeCase/
+caseB/log.*
+caseB/tmp/
+caseB/foamCaseGraph/
+caseB/**/.DS_Store
+caseB/constant/*.withDefaultValues
+
+# The case-local BC library is a build artefact: platform-specific, and stale
+# the moment its source changes.  Build it instead -- see caseB/README.md.
+caseB/lib/*.dylib
+caseB/lib/*.so
+
+# HexMeshesTests is a separate git repository, so it is not tracked from here
+HexMeshesTests
+HexMeshesTests/src/**/lnInclude/
+HexMeshesTests/src/**/Make/*/
+HexMeshesTests/scripts/__pycache__/
