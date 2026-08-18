@@ -53,7 +53,7 @@ nonLinearGeometryTotalLagrangianTotalDisplacementCoeffs
 
     // Compute BOTH constructions each residual evaluation and report the
     // largest relative difference and the worst face.  Diagnostic only.
-    faceForceDiagnostics    true;
+    faceForceDiagnostics    false;
 
 
 
@@ -69,8 +69,16 @@ nonLinearGeometryTotalLagrangianTotalDisplacementCoeffs
     // displacement by <0.2%, so leave them at the benchmark values.
     stabilisation
     {
-        momentum { type diffStencilLaplacian; scaleFactor 0.01; }
-        pressure { type RhieChow;             scaleFactor 0.01; scaleFactorJacobian 10; }
+        momentum {
+	          type diffStencilLaplacian;
+		  scaleFactor 20.0;
+	         }
+        pressure {
+	          type generalisedEvenOrderLaplacian;;
+		  scaleFactor 0.01;
+		  scaleFactorJacobian 1.0;
+		  laplacianPower      2;
+	}
     }
 }
 
